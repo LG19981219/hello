@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>进程管理</title>
+  <style type="text/css">
+    span{
+        color:red;
+    }
+    #content{
+        width:800px;
+        height:1000px;
+        position:absolute;
+        top:200px;
+        left:50%;
+        margin-left:-400px;
+        text-align:center;
+        font-size:20px;
+        font-weight:bolder;
+    }
+    input{
+        font-weight:bolder;
+    }
+  </style>
+</head>
+<body>
+    <div id = "content">
+        <h3>进程管理模拟</h3>
+        <input id = "but_1" type="button" value = "先来先服务法">
+        <input id = "but_2" type="button" value = "短作业优先法">
+        <input id = "but_3" type="button" value = "轮转法">
+        <div id = "order"></div>
+        <div id = "text"></div>
+    </div>
+    <script>
+        var num = 0;
+        var but1 = document.getElementById("but_1"),
+            but2 = document.getElementById("but_2"),
+            but3 = document.getElementById("but_3");
+        var order = document.getElementById('order');
+        var text = document.getElementById("text");
+        //创建对象
+        function createPcb(name, start, go, kaishi, end, zhouzhuan, daiquan){
+            var obj = new Object();
+            obj.name = name;
+            obj.start = start;
+            obj.go = go;
+            obj.kaishi = kaishi;
+            obj.end = end;
+            obj.zhouzhuan = zhouzhuan;
+            obj.daiquan = daiquan;
+            return obj;
+        }
+        //输入进程属性
+        function createJC(num, arrName, arrStart, arrGo, arrObj){
+            for(var i = 0;i<num;i++){
+                arrName[i] = prompt("请输入第"+(i+1)+"个进程名");
+                arrStart[i] = parseInt(prompt("请输入第"+(i+1)+"个进程到达时间"));
+                arrGo[i] = parseInt(prompt("请输入第"+(i+1)+"个进程服务时间"));
+                arrObj[i] = createPcb(arrName[i], arrStart[i], arrGo[i]);
+            }
+        }
+        //按开始时间进行排序
+        function paixu(arrObj){
+            for(var j = 0;j<(num-1);j++){
+                if(arrObj[j].start > arrObj[j+1].start){
+                    var arr = [];
+                    arr[j] = arrObj[j+1];
+                    arrObj[j+1] = arrObj[j];
+                    arrObj[j] = arr[j];
+                }
+            }
+        }
+        //按服务时间排序
+        function paixuGo(arrObj){
+            for(var j = 0;j<(num-1);j++){
+                if(j>0){
+                    if(arrObj[j].go > arrObj[j+1].go){
+                    var arr = [];
+                    arr[j] = arrObj[j+1];
+                    arrObj[j+1] = arrObj[j];
+                    arrObj[j] = arr[j];
+                    }
+                }
+            }
+        }
+        //打印执行次序
+        function dayin(arrObj){
+            var strName = "";
+            for(var m =0;m<num;m++){
+                strName = strName + arrObj[m].name + "   ";
+            }
+            order.innerHTML = "执行次序为:" + strName;
+        }
+        //计算开始时间，结束时间，周转时间，带权周转时间
+        function jsTime(arrObj){
+            for(var m = 0;m<num;m++){
+                if(m == 0){
+                    arrObj[m].kaishi = arrObj[m].start;
+                    arrObj[m].end = arrObj[m].start + arrObj[m].go;
+                    console.log(arrObj[m].end);
+                }else{
+                    arrObj[m].kaishi = arrObj[m-1].end
+                    arrObj[m].end = arrObj[m].kaishi + arrObj[m].go;
+                }
+                arrObj[m].zhouzhuan = arrObj[m].end - arrObj[m].start; // 完成时间减去到达时间
+                arrObj[m].daiquan = arrObj[m].zhouzhuan/arrObj[m].go; // 周转时间除以服务时间
+                console.log(arrObj[m]);
+            }
+        }
+        //打印进程信息
+        function dyxinxi(arrObj,num){
+            var str = "";
+            for(var i=0;i<num;i++){
+                str = str+"进程"+"<span>"+arrObj[i].name+"</span>"
+                +"----"
+                +'到达时间:'+"<span>"+arrObj[i].start+"</span>"
+                +'服务时间:'+"<span>"+arrObj[i].go+"</span>"
+                +'开始时间:'+"<span>"+arrObj[i].kaishi+"</span>"
+                +'完成时间:'+"<span>"+arrObj[i].end+"</span>"
+                +'周转时间:'+"<span>"+arrObj[i].zhouzhuan+"</span>"
+                +'带权周转时间:'+"<span>"+arrObj[i].daiquan+"</span>"+"<br>"+"<br>";
+            }
+            text.innerHTML = str;
+        }
+        //先来先服务
+        but1.onclick = function(){
+            var arrName = [];
+            var arrStart = [];
+            var arrGo = [];
+            var arrObj = [];
+            num = parseInt(prompt("请输入进程数"));
+            createJC(num, arrName, arrStart, arrGo, arrObj);
+            //按开始时间进行排序
+            paixu(arrObj);
+            //打印执行次序
+            dayin(arrObj);
+            //计算开始时间，结束时间，周转时间，带权周转时间
+            jsTime(arrObj);
+            //打印信息
+            dyxinxi(arrObj,num);
+        }
+        //短作业优先
+        but2.onclick = function(){
+            var arrName = [];
+            var arrStart = [];
+            var arrGo = [];
+            var arrObj = [];
+            num = parseInt(prompt("请输入进程数"));
+            createJC(num, arrName, arrStart, arrGo, arrObj);
+            //按开始时间进行排序
+            paixuGo(arrObj);
+            //打印执行次序
+            dayin(arrObj);
+            //计算开始时间，结束时间，周转时间，带权周转时间
+            jsTime(arrObj);
+            //打印信息
+            dyxinxi(arrObj,num);
+        }
+        //轮转法
+        but3.onclick = function(){
+            var arrName = [];
+            var arrStart = [];
+            var arrGo = [];
+            var arrObj = [];
+            var time = null;
+            var time = parseInt(prompt("请输入给定时间"));
+            num = parseInt(prompt("请输入进程数"));
+            createJC(num, arrName, arrStart, arrGo, arrObj);
+            //按开始时间进行排序
+            paixu(arrObj);
+            var arrGoTime = [];
+            //将服务时间放入一个数组
+            for(var i=0;i<num;i++){
+                arrGoTime[i] = arrObj[i].go;
+            }
+            //外层循环次数
+            var max = Math.ceil(Math.max.apply(null,arrGoTime)/time)
+            var startTime = arrObj[0].start;
+            var endTime = 0;
+            var str = ""
+            for(var i=0;i<max;i++){
+               for(var j=0;j<num;j++){
+                   if(arrGoTime[j]==time){
+                       endTime = endTime + time;
+                       arrGoTime[j] = arrGoTime[j]-time;
+                       //document.write("时刻"+startTime+"开始执行当前线程"+arrObj[j].name+"<br>"+"时刻"+endTime+"结束本次执行"+"<br>");
+                       str = str + "时刻"+startTime+"开始执行当前线程"+arrObj[j].name+"<br>"+"时刻"+endTime+"结束本次执行"+"<br>"
+                       startTime = startTime + time;
+                   }else if(arrGoTime[j]<time && arrGoTime[j]>0){
+                       endTime = endTime + arrObj[j].go;
+                       arrGoTime[j] = arrGoTime[j]-arrObj.go;
+                       //document.write("时刻"+startTime+"开始执行当前线程"+arrObj[j].name+"<br>"+"时刻"+endTime+"结束本次执行"+"<br>");
+                       str = str + "时刻"+startTime+"开始执行当前线程"+arrObj[j].name+"<br>"+"时刻"+endTime+"结束本次执行"+"<br>"
+                       startTime = startTime + arrObj[j].go;
+                   }else{
+                       endTime = endTime + time;
+                       arrGoTime[j] = arrGoTime[j]-time;
+                       //document.write("时刻"+startTime+"开始执行当前线程"+arrObj[j].name+"<br>"+"时刻"+endTime+"结束本次执行"+"<br>");
+                       str = str + "时刻"+startTime+"开始执行当前线程"+arrObj[j].name+"<br>"+"时刻"+endTime+"结束本次执行"+"<br>"
+                       startTime = startTime + time;
+                   }
+               }
+            }
+            text.innerHTML = str;
+        }
+    </script>
+    
+</body>
+</html>
